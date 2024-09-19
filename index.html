@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lite Js</title>
+</head>
+<body>
+    
+    <div id="leaf-root">
+
+        <button @click="plusCount">+</button>
+        <button @click="count--">-</button>
+
+        <span l-text="count"></span>
+        <div l-show="count > 2">Over 2</div>
+    </div>
+
+    <script src="./leaf.js"></script>
+
+    <script>
+        Leaf.init({
+            count: 0,
+            plusCount() {
+                this.count++
+            }
+        })
+    </script>
+</body>
+</html>
