@@ -14,6 +14,17 @@
 
         <span l-text="count"></span>
         <div l-show="count > 2">Over 2</div>
+
+        <div style="margin-top: 10px;">
+            <input type="text" l-model="name">
+            <select l-model="name">
+                <option value="">Null</option>
+                <option value="leaf.js">leaf.js</option>
+                <option value="test">test</option>
+                <option value="gust">gust</option>
+            </select>
+            <span l-text="name"></span>
+        </div>
     </div>
 
     <script src="./leaf.js"></script>
@@ -21,6 +32,7 @@
     <script>
         Leaf.init({
             count: 0,
+            name: "leaf.js",
             plusCount() {
                 this.count++
             }

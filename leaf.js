@@ -51,6 +51,8 @@ window.Leaf = {
 
     },
 
+    lModelTags : ['input', 'select'],
+
     directives : {
 
         'l-text': (el, value) => {
@@ -63,6 +65,16 @@ window.Leaf = {
 
             el.style.display = value ? 'block' : 'none'
 
+        },
+
+        'l-model': (el, value) => {
+
+            
+            if( ['input', 'select'].includes( el.tagName.toLowerCase() ) ) {
+                el.value = value
+            }
+
+            
         }
 
     },
@@ -101,26 +113,34 @@ window.Leaf = {
 
             Array.from(el.attributes).forEach(attribute => {
 
-                if (! attribute.name.startsWith('@')) return
+                if (! attribute.name.startsWith('@') && attribute.name !== 'l-model') return
 
-                let event = attribute.name.replace('@', '')
+                if(attribute.name === 'l-model') {
+
+                    el.addEventListener('input', (e) => {
+                        this.data[attribute.value] = e.target.value;
+                    });
+
+                    return
+                }
                 
-                el.addEventListener(event, () => {
+                let event = attribute.name.replace('@', '')
 
-                    if( this.isArrowFunction(attribute.value) ) {
+                el.addEventListener(event, (e) => {
 
-                        eval(`with (this.data) { (${attribute.value}) }`)()
+                    if (this.isArrowFunction(attribute.value)) {
+
+                        eval(`with (this.data) { (${attribute.value}) }`)();
 
                     } else if (this.data[attribute.value]) {
 
-                        eval(`with (this.data) { (${attribute.value}()) }`)
+                        eval(`with (this.data) { (${attribute.value}()) }`);
 
                     } else {
 
-                        eval(`with (this.data) { (${attribute.value}) }`)
-                        
-                    }
+                        eval(`with (this.data) { (${attribute.value}) }`);
 
+                    }
                 })
 
             })
@@ -133,10 +153,12 @@ window.Leaf = {
         this.walkDomBFS(this.root, el => {
             
             Array.from(el.attributes).forEach(attribute => {
-
+                
                 if (! Object.keys(this.directives).includes(attribute.name)) return
 
-                this.directives[attribute.name](el, eval(`with (this.data) { (${attribute.value}) }`))
+                this.directives[attribute.name](
+                    el, eval(`with (this.data) { (${attribute.value}) }`)
+                )
 
             })
             
@@ -170,6 +192,14 @@ window.Leaf = {
         const arrowFunctionPattern = /^\(\s*\)\s*=>\s*/;
         return arrowFunctionPattern.test(value);
 
+    },
+
+    isValidLModel (el) {
+        return this.isAttributeContainLModel(Array.from(el.attributes)) && this.lModelTags.includes(el.tagName.toLowerCase())
+    },
+
+    isAttributeContainLModel (attributeArr) {
+        return attributeArr.some(attr => attr.name.includes("l-model"))
     }
 }
 
