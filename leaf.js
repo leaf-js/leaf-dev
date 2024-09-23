@@ -1,7 +1,55 @@
-import { Queue } from './Queue.js';
-
 window.Leaf = {
-    Queue : Queue,
+    Queue : class {
+
+        queue = [];
+
+        /**
+         * Adds a new element to the end of the queue.
+         *
+         * @param {*} element - the element to be added to the queue
+         * @return {undefined} this function does not return any value
+         */
+        enqueue(element) {
+            this.queue.push(element);
+        }
+
+        /**
+         * Removes and returns the front element from the queue.
+         *
+         * @return {*} The front element from the queue, or undefined if the queue is empty.
+         */
+        dequeue() {
+            return this.queue.shift();
+        }
+
+        /**
+         * Returns the front element from the queue without removing it.
+         *
+         * @return {*} The front element from the queue, or undefined if the queue is empty.
+         */
+        peek() {
+            return $this.queue[0];
+        }
+
+        /**
+         * Checks if the queue is empty.
+         *
+         * @return {boolean} True if the queue is empty, false otherwise.
+         */
+        isEmpty() {
+            return this.queue.length === 0;
+        }
+
+        /**
+         * Returns the number of elements in the queue.
+         *
+         * @return {number} The size of the queue.
+         */
+        size() {
+            return this.queue.length;
+        }
+
+    },
 
     lModelTags : ['input', 'select'],
 
@@ -80,19 +128,18 @@ window.Leaf = {
 
                 el.addEventListener(event, (e) => {
 
-                    // Create a function to evaluate the expression safely within the context of `this.data`
-                    const evaluateExpression = new Function('data', 'e', `
-                        with (data) {
-                            return (${attribute.value});
-                        }
-                    `);
-
                     if (this.isArrowFunction(attribute.value)) {
-                        evaluateExpression(this.data, e)(); // Call the arrow function
+
+                        eval(`with (this.data) { (${attribute.value}) }`)();
+
                     } else if (this.data[attribute.value]) {
-                        evaluateExpression(this.data, e)(); // If it's a named function, call it
+
+                        eval(`with (this.data) { (${attribute.value}()) }`);
+
                     } else {
-                        evaluateExpression(this.data, e); // Evaluate the expression
+
+                        eval(`with (this.data) { (${attribute.value}) }`);
+
                     }
                 })
 
@@ -109,10 +156,8 @@ window.Leaf = {
                 
                 if (! Object.keys(this.directives).includes(attribute.name)) return
 
-                const value = new Function('data', `with(data) { return (${attribute.value}); }`);
-
                 this.directives[attribute.name](
-                    el, value(this.data)
+                    el, eval(`with (this.data) { (${attribute.value}) }`)
                 )
 
             })
