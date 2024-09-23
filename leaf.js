@@ -77,9 +77,76 @@ window.Leaf = {
             
         },
 
-        'l-for': (el, value) => {
-            console.log(value);
+        'l-for': (root, array, iterator, self) => {
             
+            function addSkipToChildDom(root) {
+                
+                if(!root.getAttribute('l-for')) {
+
+                    root.setAttribute('skip', '1')
+
+                }
+
+                for (const child of root.children) {
+
+                    addSkipToChildDom(child)
+                    
+                }
+
+            }
+
+            function addIndexToChildDom(root, index) {
+                
+                if(!root.getAttribute('index')) {
+
+                    root.setAttribute('index', index)
+
+                }
+
+                for (const child of root.children) {
+                    
+                    addIndexToChildDom(child, index)
+                    
+                }
+
+            }
+
+            addSkipToChildDom(root)
+
+            array.forEach((val, index) => {
+
+                if(index) {
+                    const clone = root.children[0].cloneNode(true)
+
+                    clone.setAttribute('index', index)
+
+                    addIndexToChildDom(clone, index)
+
+                    root.appendChild(clone)
+                } 
+
+            })
+
+            root.children[0].setAttribute('index', 0)
+
+            addIndexToChildDom(root.children[0], 0)
+
+            self.walkDomBFS(root, el => {
+
+                Array.from(el.attributes).forEach(attribute => {
+                    
+                    if (! Object.keys(self.directives).includes(attribute.name)) return
+                    if(attribute.name === 'l-for') return
+
+                    const index = el.getAttribute('index')
+                    
+                    self.directives[attribute.name]( el, array[index] )
+
+                })
+                
+
+            })
+
         }
 
     },
@@ -101,7 +168,7 @@ window.Leaf = {
         return new Proxy(data, {
 
             set(target, key, value) {
-
+                
                 target[key] = value
 
 
@@ -117,6 +184,8 @@ window.Leaf = {
         this.walkDomBFS(this.root, el => {
 
             Array.from(el.attributes).forEach(attribute => {
+
+                if(el.getAttribute('skip')) return;
 
                 if (! attribute.name.startsWith('@') && attribute.name !== 'l-model') return
 
@@ -158,9 +227,18 @@ window.Leaf = {
         this.walkDomBFS(this.root, el => {
             
             Array.from(el.attributes).forEach(attribute => {
-                console.log(el,attribute.value);
                 
-                if (! Object.keys(this.directives).includes(attribute.name)) return
+                if (! Object.keys(this.directives).includes(attribute.name) || el.getAttribute('skip')) return
+
+                if(attribute.name === 'l-for') {
+                    const matches = attribute.value.match(/const (\w+) of (\w+)/);
+                    
+                    this.directives["l-for"](
+                        el, eval(`with (this.data) { (${matches[2]}) }`), matches[1], this
+                    )
+                    
+                    return
+                }
 
                 this.directives[attribute.name](
                     el, eval(`with (this.data) { (${attribute.value}) }`)
