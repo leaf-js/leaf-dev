@@ -17,13 +17,21 @@
 
         <div style="margin-top: 10px;">
             <input type="text" l-model="name">
+
             <select l-model="name">
                 <option value="">Null</option>
                 <option value="leaf.js">leaf.js</option>
                 <option value="test">test</option>
                 <option value="gust">gust</option>
             </select>
+
             <span l-text="name"></span>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <div l-for="child in children">
+                <span l-text="child"></span>
+            </div>
         </div>
     </div>
 
@@ -33,6 +41,9 @@
         Leaf.init({
             count: 0,
             name: "leaf.js",
+            children: [
+                'MKT', 'LMA', 'KTL', 'ZYMH', 'HWL', 'YZK', 'ACMM'
+            ],
             plusCount() {
                 this.count++
             }

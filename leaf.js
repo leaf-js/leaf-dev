@@ -193,14 +193,7 @@ window.Leaf = {
         return arrowFunctionPattern.test(value);
 
     },
-
-    isValidLModel (el) {
-        return this.isAttributeContainLModel(Array.from(el.attributes)) && this.lModelTags.includes(el.tagName.toLowerCase())
-    },
-
-    isAttributeContainLModel (attributeArr) {
-        return attributeArr.some(attr => attr.name.includes("l-model"))
-    }
+    
 }
 
 
