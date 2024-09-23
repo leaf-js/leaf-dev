@@ -75,6 +75,11 @@ window.Leaf = {
             }
 
             
+        },
+
+        'l-for': (el, value) => {
+            console.log(value);
+            
         }
 
     },
@@ -153,6 +158,7 @@ window.Leaf = {
         this.walkDomBFS(this.root, el => {
             
             Array.from(el.attributes).forEach(attribute => {
+                console.log(el,attribute.value);
                 
                 if (! Object.keys(this.directives).includes(attribute.name)) return
 
