@@ -35,6 +35,14 @@
             </div>
             
         </div>
+
+        <div style="margin-top: 10px;" l-for="const child of secChildren">
+
+            <div>
+                <span l-text="child.name"></span> / <span l-text="child.age"></span>
+            </div>
+            
+        </div>
     </div>
 
     <script src="./leaf.js"></script>
@@ -45,6 +53,28 @@
             name: "leaf.js",
             children: [
                 'MKT', 'LMA', 'KTL', 'ZYMH', 'HWL', 'YZK', 'ACMM'
+            ],
+            secChildren: [
+                {
+                    name: "LMA",
+                    age: 21,
+                },
+                {
+                    name: "KTL",
+                    age: 28,
+                },
+                {
+                    name: "MKT",
+                    age: 21,
+                },
+                {
+                    name: "ZYMH",
+                    age: 32,
+                },
+                {
+                    name: "MKT2",
+                    age: 20
+                }
             ],
             plusCount() {
                 this.count++

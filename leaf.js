@@ -136,11 +136,27 @@ window.Leaf = {
                 Array.from(el.attributes).forEach(attribute => {
                     
                     if (! Object.keys(self.directives).includes(attribute.name)) return
+
                     if(attribute.name === 'l-for') return
 
                     const index = el.getAttribute('index')
-                    
-                    self.directives[attribute.name]( el, array[index] )
+
+                    if(typeof array[index] === 'object') {
+
+                        const splitter = attribute.value.split('.')
+                        
+                        if(splitter[0] === iterator) {
+                            const obj = array[index]
+
+                            self.directives[attribute.name](el, obj[splitter[1]])
+
+                        }
+
+                    } else {
+
+                        self.directives[attribute.name](el, array[index])
+
+                    }
 
                 })
                 
