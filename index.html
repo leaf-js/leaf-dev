@@ -7,7 +7,7 @@
 </head>
 <body>
     
-    <div id="leaf-root">
+    <!-- <div id="leaf-root">
 
         <button @click="plusCount">+</button>
         <button @click="count--">-</button>
@@ -31,6 +31,7 @@
         <div style="margin-top: 10px;" l-for="const child of children">
 
             <div>
+                <span l-text="index+1"></span>
                 <span l-text="child"></span>
             </div>
             
@@ -39,7 +40,25 @@
         <div style="margin-top: 10px;" l-for="const child of secChildren">
 
             <div>
+                <span l-text="index+1"></span>
                 <span l-text="child.name"></span> / <span l-text="child.age"></span>
+            </div>
+            
+        </div>
+    </div> -->
+
+    <div id="leaf-root">
+        <div>
+            <input type="text" l-model="name"> <button @click="addChild">Add</button>
+        </div>
+
+        <div style="margin-top: 10px;" l-for="const child of children">
+
+            <div>
+                <span l-text="index+1"></span>
+                <span l-text="child"></span>
+
+                <button @click="removeChild(index)">rem</button>
             </div>
             
         </div>
@@ -50,7 +69,7 @@
     <script>
         Leaf.init({
             count: 0,
-            name: "leaf.js",
+            name: "",
             children: [
                 'MKT', 'LMA', 'KTL', 'ZYMH', 'HWL', 'YZK', 'ACMM'
             ],
@@ -77,7 +96,18 @@
                 }
             ],
             plusCount() {
-                this.count++
+
+                this.children.push('TTW')
+                
+            },
+            addChild() {
+                this.children.push(this.name)
+
+                this.name = ""
+            },
+
+            removeChild(i) {
+                this.children.splice(i, 1)
             }
         })
     </script>

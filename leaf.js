@@ -97,11 +97,7 @@ window.Leaf = {
 
             function addIndexToChildDom(root, index) {
                 
-                if(!root.getAttribute('index')) {
-
-                    root.setAttribute('index', index)
-
-                }
+                root.setAttribute('index', index)
 
                 for (const child of root.children) {
                     
@@ -112,6 +108,15 @@ window.Leaf = {
             }
 
             addSkipToChildDom(root)
+
+            if(root.children.length > 1) {
+
+                Array.from(root.children).forEach((child, i) => {
+
+                    i !== 0 && child.remove()    
+
+                })
+            }
 
             array.forEach((val, index) => {
 
@@ -130,7 +135,52 @@ window.Leaf = {
             root.children[0].setAttribute('index', 0)
 
             addIndexToChildDom(root.children[0], 0)
+            
+            //register event listeners for l-for
+            self.walkDomBFS(root, el => {
 
+                Array.from(el.attributes).forEach(attribute => {
+    
+                    if (! attribute.name.startsWith('@') && attribute.name !== 'l-model') return
+    
+                    // if(attribute.name === 'l-model') {
+    
+                    //     el.addEventListener('input', (e) => {
+                    //         this.data[attribute.value] = e.target.value;
+                    //     });
+    
+                    //     return
+                    // }
+
+                    const index = el.getAttribute('index')
+                    
+                    let event = attribute.name.replace('@', '')
+
+                    const str = attribute.value.replace("index", index);
+
+                    const functionNameRegex = /^([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/;
+
+                    el.addEventListener(event, (e) => {
+    
+                        if (self.isArrowFunction(attribute.value)) {
+    
+                            eval(`with (self.data) { (${str}) }`)();
+    
+                        } else if (self.data[str.match(functionNameRegex)[1]]) {
+
+                            eval(`with (self.data) { (${str.match(functionNameRegex)[1]}(${index})) }`);
+    
+                        } else {
+                            eval(`with (self.data) { (${attribute.value}) }`);
+    
+                        }
+                    })
+    
+                })
+
+            })
+
+            //refresh dom for l-for
             self.walkDomBFS(root, el => {
 
                 Array.from(el.attributes).forEach(attribute => {
@@ -150,11 +200,44 @@ window.Leaf = {
 
                             self.directives[attribute.name](el, obj[splitter[1]])
 
+                        } else if (attribute.value !== 'index' && attribute.value.includes('index')) {
+
+                            const str = attribute.value.replace("index", index);                           
+
+                            self.directives[attribute.name](
+                                el, eval(`with (self.data) { (${str}) }`)
+                            )
+
+                        } else {
+
+                            self.directives[attribute.name](
+                                el, eval(`with (self.data) { (${attribute.value}) }`)
+                            )
+
                         }
 
                     } else {
+                        
+                        if(attribute.value === iterator) {
 
-                        self.directives[attribute.name](el, array[index])
+                            self.directives[attribute.name](el, array[index])
+
+                        } else if (attribute.value !== 'index' && attribute.value.includes('index')) {
+
+                            const str = attribute.value.replace("index", index);                           
+
+                            self.directives[attribute.name](
+                                el, eval(`with (self.data) { (${str}) }`)
+                            )
+
+                        } else {
+
+                            self.directives[attribute.name](
+                                el, eval(`with (self.data) { (${attribute.value}) }`)
+                            )
+
+                        }
+                        
 
                     }
 
@@ -172,8 +255,8 @@ window.Leaf = {
         this.root = document.querySelector('#leaf-root')
         this.data = this.observe(data)
 
-        this.registerListeners()
         this.refreshDom()
+        this.registerListeners()
 
     },
 
@@ -181,18 +264,37 @@ window.Leaf = {
 
         var self = this
 
-        return new Proxy(data, {
+        const handler = {
 
             set(target, key, value) {
-                
+
                 target[key] = value
 
 
                 self.refreshDom()
 
+                return true
+
             }
 
-        })
+        }
+
+        for (let key in data) {
+
+            if (Array.isArray(data[key])) {
+
+                // If it's an array, proxy the array
+                data[key] = new Proxy(data[key], handler);
+
+            } else if (typeof data[key] === 'object' && data[key] !== null) {
+
+                // If it's an object, recursively proxy its properties
+                data[key] = self.observe(data[key]);
+            }
+
+        }
+
+        return new Proxy(data, handler)
     },
 
     registerListeners() {
@@ -200,7 +302,7 @@ window.Leaf = {
         this.walkDomBFS(this.root, el => {
 
             Array.from(el.attributes).forEach(attribute => {
-
+                
                 if(el.getAttribute('skip')) return;
 
                 if (! attribute.name.startsWith('@') && attribute.name !== 'l-model') return
@@ -227,7 +329,9 @@ window.Leaf = {
                         eval(`with (this.data) { (${attribute.value}()) }`);
 
                     } else {
-
+                        console.log('====================================');
+                        console.log(el.getAttribute('skip'));
+                        console.log('====================================');
                         eval(`with (this.data) { (${attribute.value}) }`);
 
                     }
